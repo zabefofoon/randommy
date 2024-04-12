@@ -1,36 +1,29 @@
 <template>
   <ul class="flex flex-col gap-6">
-    <li class="max-w-[80%] lg:max-w-[320px]">
-      <div class="text-sm">other(korea)</div>
-      <p class="bg-slate-200 border | rounded-lg | p-1.5 | text-sm">
-        What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing
-        and typesetting industry. Lorem Ipsum has been the industry's standard
-        dummy text ever since the 1500s, when an unknown printer took a galley
-        of type and scrambled it to make a type specimen book. It has survived
-        not only five centuries, but also the leap into electronic typesetting
-      </p>
-    </li>
-    <li class="max-w-[80%] lg:max-w-[320px]">
-      <div class="text-sm">other(korea)</div>
-      <p class="bg-slate-200 border | rounded-lg | p-1.5 | text-sm">
-        What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing
-        and typesetting industry. Lorem Ipsum has been the industry's standard
-        dummy text ever since the 1500s
-      </p>
-    </li>
-    <li class="max-w-[80%] lg:max-w-[320px] | ml-auto">
-      <div class="text-sm text-right"></div>
-      <p class="bg-white | border rounded-lg | p-1.5 | text-sm">
-        What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing
-        and typesetting industry. Lorem Ipsum has been the industry's standard
-        dummy text ever since the 1500s, when an unknown printer took a galley
-        of type and scrambled it to make a type specimen book. It has survived
-        not only five centuries, but also the leap into electronic typesetting
+    <li
+      v-for="(message, index) in messages"
+      :key="index"
+      class="max-w-[80%] lg:max-w-[320px]"
+      :class="{ 'ml-auto': message.my }">
+      <div
+        class="text-sm"
+        :class="message.my ? 'text-right' : 'text-left'">
+        <span v-if="message.my">me</span>
+        <span v-else>other(korea)</span>
+      </div>
+      <p
+        class="border | rounded-lg | p-1.5 | text-sm"
+        :class="message.my ? 'bg-white' : 'bg-slate-200'">
+        {{ message.message }}
       </p>
     </li>
   </ul>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+defineProps<{
+  messages: { my: boolean; message: string }[]
+}>()
+</script>
 
 <style></style>
