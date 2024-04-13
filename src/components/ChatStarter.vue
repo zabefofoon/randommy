@@ -5,8 +5,12 @@
       <div class="w-[240px] aspect-square bg-slate-100 | rounded-t-lg"></div>
       <button
         class="w-full | border rounded-b-lg | px-8 py-1.5 | bg-slate-500 | text-white"
-        @click="emit('start')">
-        <Loader v-if="loading" />
+        @click="loading ? emit('pause') : emit('start')">
+        <span v-if="loading">
+          <Loader />
+          <span class="ml-2 | text-sm">중단하기</span>
+        </span>
+
         <span
           v-else
           class="text-sm">
@@ -31,6 +35,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'start'): void
+  (e: 'pause'): void
 }>()
 </script>
 

@@ -26,7 +26,8 @@
     <ChatStarter
       v-if="isShowPopup"
       :loading="loading"
-      @start="startChat" />
+      @start="startChat"
+      @pause="pauseChat" />
   </section>
 </template>
 
@@ -57,15 +58,20 @@ const showPopup = (value: boolean) => (isShowPopup.value = value)
 const loading = ref(false)
 const setLoading = (value: boolean) => (loading.value = value)
 
-const peerConnection = new RTCPeerConnection()
-const dataChannel = peerConnection.createDataChannel(`randommy`)
+let peerConnection: RTCPeerConnection
+let dataChannel: RTCDataChannel
 
 const messages = ref<{ my: boolean; message: string }[]>([])
 const opponent = ref<EnterInfo>()
 const setOpponent = (info: EnterInfo) => (opponent.value = info)
 
+let timer: NodeJS.Timeout
+
 const startChat = async () => {
   setLoading(true)
+
+  peerConnection = new RTCPeerConnection()
+  dataChannel = peerConnection.createDataChannel(`randommy`)
 
   socket = io('http://192.168.219.107:3001/repeater', {
     transports: ['websocket']
@@ -101,6 +107,39 @@ const startChat = async () => {
       await peerConnection.setRemoteDescription(token.data)
     }
   })
+  const randomTimeout = [2000, 3000, 4000]
+  const randomNumber = Math.floor(Math.random() * 3)
+
+  // 채팅 시작
+  dataChannel.addEventListener('open', () => {
+    setLoading(false)
+    showPopup(false)
+    socket.disconnect()
+    socket.close()
+    clearTimeout(timer)
+  })
+
+  // 매세지 받을 때
+  peerConnection.addEventListener('datachannel', event => {
+    const receiveChannel = event.channel
+
+    receiveChannel.onmessage = async event => {
+      messages.value.push({
+        my: false,
+        message: event.data
+      })
+      await util.sleep(1)
+      scrollAreaEl.value!.scrollTop = 999999999999999
+    }
+  })
+
+  timer = setTimeout(() => {
+    if (isShowPopup.value) {
+      socket.disconnect()
+      socket.close()
+      startChat()
+    }
+  }, randomTimeout[randomNumber])
 }
 
 const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
@@ -111,7 +150,6 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
   // offer SDP 전달
   peerConnection.addEventListener('icecandidate', event => {
     if (!event.candidate) return
-
     socket.emit('enter', <RtcOffer>{
       type: 'rtcOffer',
       data: peerConnection.localDescription,
@@ -124,9 +162,9 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
 const sendAnswerSDP = async (socket: Socket) => {
   socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
     if (token.receiverId !== socket.id) return
+
     // 전달받은 offer SDP 셋팅
     await peerConnection.setRemoteDescription(token.data)
-
     // Answer SDP 셋팅 후 전달
     const answerSDP = await peerConnection.createAnswer()
     await peerConnection.setLocalDescription(answerSDP)
@@ -139,26 +177,13 @@ const sendAnswerSDP = async (socket: Socket) => {
   })
 }
 
-// 채팅 시작
-dataChannel.addEventListener('open', () => {
-  setLoading(false)
-  showPopup(false)
+const pauseChat = () => {
   socket.disconnect()
-})
-
-// 매세지 받을 때
-peerConnection.addEventListener('datachannel', event => {
-  const receiveChannel = event.channel
-
-  receiveChannel.onmessage = async event => {
-    messages.value.push({
-      my: false,
-      message: event.data
-    })
-    await util.sleep(1)
-    scrollAreaEl.value!.scrollTop = 999999999999999
-  }
-})
+  socket.close()
+  setLoading(false)
+  showPopup(true)
+  clearTimeout(timer)
+}
 
 const sendMessage = async (message: string) => {
   dataChannel.send(message)
