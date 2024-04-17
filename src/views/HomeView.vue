@@ -108,7 +108,7 @@ const startChat = async () => {
       await peerConnection.setRemoteDescription(token.data)
     }
   })
-  const randomTimeout = [2000, 3000, 4000]
+  const randomTimeout = [10000, 11000, 12000]
   const randomNumber = Math.floor(Math.random() * 3)
 
   // 채팅 시작
