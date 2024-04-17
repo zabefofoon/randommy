@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env: 
+      VITE_REPEATER_URL: ${{secrets.VITE_REPEATER_URL}}
     strategy:
       matrix:
         node-version: [20]
