@@ -73,6 +73,7 @@ const startChat = async () => {
   peerConnection = new RTCPeerConnection()
   dataChannel = peerConnection.createDataChannel(`randommy`)
 
+  console.log(import.meta.env.VITE_REPEATER_URL)
   socket = io(import.meta.env.VITE_REPEATER_URL, {
     transports: ['websocket']
   })
