@@ -74,7 +74,9 @@ const startChat = async () => {
   dataChannel = peerConnection.createDataChannel(`randommy`)
 
   console.log(import.meta.env.VITE_REPEATER_URL)
-  socket = io(import.meta.env.VITE_REPEATER_URL)
+  socket = io(import.meta.env.VITE_REPEATER_URL, {
+    transports: ['websocket']
+  })
 
   // 1. 소켓서버에 내 정보를 전송
   socket.on('connect', () => {
