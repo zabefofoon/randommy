@@ -38,10 +38,11 @@ import Notice from '@/components/Notice.vue'
 import type {
   ConnectSocketToken,
   EnterInfo,
+  RtcAnswer,
+  RtcOffer,
   RtcOfferToken
 } from '@/models/EnterInfo'
 import util from '@/utils/util'
-import { DataConnection, Peer } from 'peerjs'
 import { Socket, io } from 'socket.io-client'
 import { ref } from 'vue'
 
@@ -57,20 +58,32 @@ const showPopup = (value: boolean) => (isShowPopup.value = value)
 const loading = ref(false)
 const setLoading = (value: boolean) => (loading.value = value)
 
+let peerConnection: RTCPeerConnection
+let dataChannel: RTCDataChannel
+
 const messages = ref<{ my: boolean; message: string }[]>([])
+const opponent = ref<EnterInfo>()
+const setOpponent = (info: EnterInfo) => (opponent.value = info)
 
 let timer: NodeJS.Timeout
-
-let conn: DataConnection
-let peer: Peer
-
-console.log(import.meta.env.VITE_REPEATER_HOST)
-console.log(import.meta.env.VITE_REPEATER_PORT)
-console.log(import.meta.env.VITE_REPEATER_PATH)
 
 const startChat = async () => {
   setLoading(true)
 
+  peerConnection = new RTCPeerConnection({
+    iceServers: [
+      { urls: 'stun:freestun.net:5350' },
+      { urls: 'stun:stun.l.google.com:19302' },
+      {
+        urls: 'turns:freestun.tel:5350',
+        username: 'free',
+        credential: 'free'
+      }
+    ]
+  })
+  dataChannel = peerConnection.createDataChannel(`randommy`)
+
+  console.log(import.meta.env.VITE_REPEATER_URL)
   socket = io(import.meta.env.VITE_REPEATER_URL, {
     transports: ['websocket']
   })
@@ -89,105 +102,92 @@ const startChat = async () => {
   socket.on('matched', async (token: ConnectSocketToken) => {
     // 2.1 매칭된 다른 사용자에게 Offer SDP 셋팅 후, 전달
     if (token.sender.id === socket.id) {
-      console.log('matched: ', token)
-      peer = new Peer(token.sender.id, {
-        host: import.meta.env.VITE_REPEATER_HOST,
-        port: import.meta.env.VITE_REPEATER_PORT,
-        path: import.meta.env.VITE_REPEATER_PATH,
-        secure: import.meta.env.VITE_DEV_MODE !== 'true',
-        config: {
-          iceServers: [
-            { urls: 'stun:freestun.net:5350' },
-            { urls: 'stun:stun.l.google.com:19302' },
-            {
-              urls: 'turns:freestun.tel:5350',
-              username: 'free',
-              credential: 'free'
-            }
-          ]
-        }
-      })
-
-      setTimeout(() => {
-        conn = peer.connect(token.receiver.id)
-        console.log(conn)
-        conn.on('data', data => {
-          console.log('data: ', data)
-        })
-      }, 100)
-
-      peer.on('error', err => {
-        console.log(err)
-      })
-      peer.on('connection', conn => {
-        console.log('connection')
-        conn.on('open', () => {
-          conn.send(`Hello: ${token.receiver.id}`)
-          console.log('opened')
-        })
-      })
+      console.log('matched')
+      await senOfferSDP(socket, token)
+      setOpponent(token.receiver)
     }
     // 2.2 Offer SDP를 받으면, 셋팅 후 Answer SDP 전달
     else if (token.receiver.id === socket.id) {
-      console.log('matched: ', token)
-      peer = new Peer(token.receiver.id, {
-        host: import.meta.env.VITE_REPEATER_HOST,
-        port: import.meta.env.VITE_REPEATER_PORT,
-        path: import.meta.env.VITE_REPEATER_PATH,
-        secure: import.meta.env.VITE_DEV_MODE !== 'true',
-        config: {
-          iceServers: [
-            { urls: 'stun:freestun.net:5350' },
-            {
-              urls: 'turns:freestun.tel:5350',
-              username: 'free',
-              credential: 'free'
-            }
-          ],
-          sdpSemantics: 'unified-plan',
-          iceTransportPolicy: 'relay'
-        }
-      })
-
-      setTimeout(() => {
-        conn = peer.connect(token.sender.id)
-        console.log(conn)
-        conn.on('data', data => {
-          console.log('data: ', data)
-        })
-      }, 100)
-
-      peer.on('error', err => {
-        console.log(err)
-        console.log(err.message)
-      })
-
-      peer.on('connection', conn => {
-        console.log('connection')
-        conn.on('open', () => {
-          conn.send(`Hello: ${token.sender.id}`)
-          console.log('opened')
-        })
-      })
+      console.log('matched')
+      await sendAnswerSDP(socket)
+      setOpponent(token.sender)
     }
   })
 
   // 3. 전달 받은 Answer SDP 셋팅
   socket.on('receiveRtcAnswer', async (token: RtcOfferToken) => {
     if (token.senderId === socket.id) {
-      console.log(token.data)
+      await peerConnection.setRemoteDescription(token.data)
     }
   })
   const randomTimeout = [10000, 11000, 12000]
   const randomNumber = Math.floor(Math.random() * 3)
 
-  timer = setTimeout(() => {
-    if (isShowPopup.value) {
-      // socket.disconnect()
-      // socket.close()
-      // startChat()
+  // 채팅 시작
+  dataChannel.addEventListener('open', () => {
+    setLoading(false)
+    showPopup(false)
+    socket.disconnect()
+    socket.close()
+    clearTimeout(timer)
+  })
+
+  // 매세지 받을 때
+  peerConnection.addEventListener('datachannel', event => {
+    const receiveChannel = event.channel
+
+    receiveChannel.onmessage = async event => {
+      messages.value.push({
+        my: false,
+        message: event.data
+      })
+      await util.sleep(1)
+      scrollAreaEl.value!.scrollTop = 999999999999999
     }
-  }, randomTimeout[randomNumber])
+  })
+
+  // timer = setTimeout(() => {
+  //   if (isShowPopup.value) {
+  //     socket.disconnect()
+  //     socket.close()
+  //     startChat()
+  //   }
+  // }, randomTimeout[randomNumber])
+}
+
+const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
+  // offer SDP 셋팅
+  const offer = await peerConnection.createOffer()
+  await peerConnection.setLocalDescription(offer)
+
+  // offer SDP 전달
+  peerConnection.addEventListener('icecandidate', event => {
+    if (!event.candidate) return
+    socket.emit('enter', <RtcOffer>{
+      type: 'rtcOffer',
+      data: peerConnection.localDescription,
+      senderId: token.sender.id,
+      receiverId: token.receiver.id
+    })
+  })
+}
+
+const sendAnswerSDP = async (socket: Socket) => {
+  socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
+    if (token.receiverId !== socket.id) return
+
+    // 전달받은 offer SDP 셋팅
+    await peerConnection.setRemoteDescription(token.data)
+    // Answer SDP 셋팅 후 전달
+    const answerSDP = await peerConnection.createAnswer()
+    await peerConnection.setLocalDescription(answerSDP)
+    socket.emit('enter', <RtcAnswer>{
+      type: 'rtcAnswer',
+      data: answerSDP,
+      senderId: token.senderId,
+      receiverId: token.receiverId
+    })
+  })
 }
 
 const pauseChat = () => {
@@ -196,11 +196,10 @@ const pauseChat = () => {
   setLoading(false)
   showPopup(true)
   clearTimeout(timer)
-  conn.close()
-  peer.destroy()
 }
 
 const sendMessage = async (message: string) => {
+  dataChannel.send(message)
   messages.value.push({
     my: true,
     message
