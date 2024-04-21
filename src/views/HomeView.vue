@@ -98,14 +98,13 @@ const startChat = async () => {
         config: {
           iceServers: [
             { urls: 'stun:freestun.net:5350' },
+            { urls: 'stun:stun.l.google.com:19302' },
             {
               urls: 'turns:freestun.tel:5350',
               username: 'free',
               credential: 'free'
             }
-          ],
-          sdpSemantics: 'unified-plan',
-          iceTransportPolicy: 'relay'
+          ]
         }
       })
       peer.on('error', err => {
