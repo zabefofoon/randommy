@@ -168,7 +168,7 @@ const startChat = async () => {
 const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
   // offer SDP 셋팅
   const offer = await peerConnection.createOffer()
-  await peerConnection.setLocalDescription(offer)
+  peerConnection.setLocalDescription(offer)
 
   // offer SDP 전달
   peerConnection.addEventListener('icecandidate', async event => {
@@ -186,8 +186,8 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
       senderId: token.sender.id,
       receiverId: token.receiver.id
     })
-    const offer = await peerConnection.createOffer()
-    await peerConnection.setLocalDescription(offer)
+    // const offer = await peerConnection.createOffer()
+    // peerConnection.setLocalDescription(offer)
 
     socket.emit('enter', <RtcOffer>{
       type: 'rtcOffer',
@@ -208,7 +208,7 @@ const sendAnswerSDP = async (socket: Socket) => {
 
   socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
     if (token.receiverId !== socket.id) return
-    await peerConnection.setRemoteDescription(token.data)
+    peerConnection.setRemoteDescription(token.data)
 
     for (const iceCandidate of iceCandidates) {
       await peerConnection.addIceCandidate(iceCandidate)
@@ -217,7 +217,7 @@ const sendAnswerSDP = async (socket: Socket) => {
     console.log(peerConnection.signalingState)
     // Answer SDP 셋팅 후 전달
     const answerSDP = await peerConnection.createAnswer()
-    await peerConnection.setLocalDescription(answerSDP)
+    peerConnection.setLocalDescription(answerSDP)
 
     socket.emit('enter', <RtcAnswer>{
       type: 'rtcAnswer',
