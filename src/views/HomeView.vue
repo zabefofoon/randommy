@@ -107,6 +107,15 @@ const startChat = async () => {
           ]
         }
       })
+
+      setTimeout(() => {
+        conn = peer.connect(token.receiver.id)
+        console.log(conn)
+        conn.on('data', data => {
+          console.log('data: ', data)
+        })
+      }, 100)
+
       peer.on('error', err => {
         console.log(err)
       })
@@ -117,12 +126,6 @@ const startChat = async () => {
           console.log('opened')
         })
       })
-      setTimeout(() => {
-        conn = peer.connect(token.receiver.id)
-        conn.on('data', data => {
-          console.log('data: ', data)
-        })
-      }, 100)
     }
     // 2.2 Offer SDP를 받으면, 셋팅 후 Answer SDP 전달
     else if (token.receiver.id === socket.id) {
@@ -145,10 +148,20 @@ const startChat = async () => {
           iceTransportPolicy: 'relay'
         }
       })
+
+      setTimeout(() => {
+        conn = peer.connect(token.sender.id)
+        console.log(conn)
+        conn.on('data', data => {
+          console.log('data: ', data)
+        })
+      }, 100)
+
       peer.on('error', err => {
         console.log(err)
         console.log(err.message)
       })
+
       peer.on('connection', conn => {
         console.log('connection')
         conn.on('open', () => {
@@ -156,12 +169,6 @@ const startChat = async () => {
           console.log('opened')
         })
       })
-      setTimeout(() => {
-        conn = peer.connect(token.sender.id)
-        conn.on('data', data => {
-          console.log('data: ', data)
-        })
-      }, 100)
     }
   })
 
