@@ -89,6 +89,7 @@ const startChat = async () => {
   socket.on('matched', async (token: ConnectSocketToken) => {
     // 2.1 매칭된 다른 사용자에게 Offer SDP 셋팅 후, 전달
     if (token.sender.id === socket.id) {
+      console.log('matched: ', token)
       peer = new Peer(token.sender.id, {
         host: import.meta.env.VITE_REPEATER_HOST,
         port: import.meta.env.VITE_REPEATER_PORT,
@@ -103,6 +104,7 @@ const startChat = async () => {
       })
       setTimeout(() => {
         conn = peer.connect(token.receiver.id)
+        console.log(conn)
         conn.on('data', data => {
           console.log('data: ', data)
         })
@@ -110,6 +112,7 @@ const startChat = async () => {
     }
     // 2.2 Offer SDP를 받으면, 셋팅 후 Answer SDP 전달
     else if (token.receiver.id === socket.id) {
+      console.log('matched: ', token)
       peer = new Peer(token.receiver.id, {
         host: import.meta.env.VITE_REPEATER_HOST,
         port: import.meta.env.VITE_REPEATER_PORT,
@@ -124,6 +127,7 @@ const startChat = async () => {
       })
       setTimeout(() => {
         conn = peer.connect(token.sender.id)
+        console.log(conn)
         conn.on('data', data => {
           console.log('data: ', data)
         })
