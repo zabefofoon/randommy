@@ -93,8 +93,10 @@ const startChat = async () => {
       peer = new Peer(token.sender.id, {
         host: import.meta.env.VITE_REPEATER_HOST,
         port: import.meta.env.VITE_REPEATER_PORT,
-        path: import.meta.env.VITE_REPEATER_PATH
+        path: import.meta.env.VITE_REPEATER_PATH,
+        secure: import.meta.env.VITE_DEV_MODE === 'true' ? false : true
       })
+      peer.on('error', err => console.log(err))
       peer.on('connection', conn => {
         console.log('connection')
         conn.on('open', () => {
@@ -104,7 +106,6 @@ const startChat = async () => {
       })
       setTimeout(() => {
         conn = peer.connect(token.receiver.id)
-        console.log(conn)
         conn.on('data', data => {
           console.log('data: ', data)
         })
@@ -116,8 +117,10 @@ const startChat = async () => {
       peer = new Peer(token.receiver.id, {
         host: import.meta.env.VITE_REPEATER_HOST,
         port: import.meta.env.VITE_REPEATER_PORT,
-        path: import.meta.env.VITE_REPEATER_PATH
+        path: import.meta.env.VITE_REPEATER_PATH,
+        secure: import.meta.env.VITE_DEV_MODE === 'true' ? false : true
       })
+      peer.on('error', err => console.log(err))
       peer.on('connection', conn => {
         console.log('connection')
         conn.on('open', () => {
@@ -127,7 +130,6 @@ const startChat = async () => {
       })
       setTimeout(() => {
         conn = peer.connect(token.sender.id)
-        console.log(conn)
         conn.on('data', data => {
           console.log('data: ', data)
         })
