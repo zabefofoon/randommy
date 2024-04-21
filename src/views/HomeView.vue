@@ -114,11 +114,20 @@ const startChat = async () => {
       setOpponent(token.sender)
     }
   })
+  const offersIceCandidates: any[] = []
+  socket.on('receiveIcecandidate', async token => {
+    if (token.senderId !== socket.id) return
+    offersIceCandidates.push(token.data)
+  })
 
   // 3. 전달 받은 Answer SDP 셋팅
   socket.on('receiveRtcAnswer', async (token: RtcOfferToken) => {
     if (token.senderId === socket.id) {
       await peerConnection.setRemoteDescription(token.data)
+
+      for (const offersIceCandidate of offersIceCandidates) {
+        await peerConnection.addIceCandidate(offersIceCandidate)
+      }
     }
   })
   const randomTimeout = [10000, 11000, 12000]
@@ -215,6 +224,17 @@ const sendAnswerSDP = async (socket: Socket) => {
       data: answerSDP,
       senderId: token.senderId,
       receiverId: token.receiverId
+    })
+
+    // offer SDP 전달
+    peerConnection.addEventListener('icecandidate', async event => {
+      if (!event.candidate) return
+      socket.emit('enter', <Icecandidate>{
+        type: 'icecandidate',
+        data: event.candidate,
+        senderId: token.senderId,
+        receiverId: token.receiverId
+      })
     })
   })
 }
