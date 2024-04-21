@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "peerjs": "^1.5.2",
     "pinia": "^2.1.7",
     "short-unique-id": "^5.0.3",
     "socket.io-client": "^4.7.5",
