@@ -64,6 +64,10 @@ let timer: NodeJS.Timeout
 let conn: DataConnection
 let peer: Peer
 
+console.log(import.meta.env.VITE_REPEATER_HOST)
+console.log(import.meta.env.VITE_REPEATER_PORT)
+console.log(import.meta.env.VITE_REPEATER_PATH)
+
 const startChat = async () => {
   setLoading(true)
 
