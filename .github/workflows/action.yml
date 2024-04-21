@@ -12,8 +12,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env: 
+    env:
       VITE_REPEATER_URL: ${{secrets.VITE_REPEATER_URL}}
+      VITE_REPEATER_HOST: ${{secrets.VITE_REPEATER_HOST}}
+      VITE_REPEATER_PORT: ${{secrets.VITE_REPEATER_PORT}}
+      VITE_REPEATER_PATH: ${{secrets.VITE_REPEATER_PATH}}
     strategy:
       matrix:
         node-version: [20]
