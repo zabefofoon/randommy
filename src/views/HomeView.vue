@@ -123,11 +123,11 @@ const startChat = async () => {
   // 3. 전달 받은 Answer SDP 셋팅
   socket.on('receiveRtcAnswer', async (token: RtcOfferToken) => {
     if (token.senderId === socket.id) {
-      await peerConnection.setRemoteDescription(token.data)
-
-      for (const offersIceCandidate of offersIceCandidates) {
-        await peerConnection.addIceCandidate(offersIceCandidate)
-      }
+      peerConnection.setRemoteDescription(token.data).then(() => {
+        for (const offersIceCandidate of offersIceCandidates) {
+          peerConnection.addIceCandidate(offersIceCandidate)
+        }
+      })
     }
   })
   const randomTimeout = [10000, 11000, 12000]
