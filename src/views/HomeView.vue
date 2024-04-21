@@ -103,7 +103,9 @@ const startChat = async () => {
               username: 'free',
               credential: 'free'
             }
-          ]
+          ],
+          sdpSemantics: 'unified-plan',
+          iceTransportPolicy: 'relay'
         }
       })
       peer.on('error', err => {
@@ -139,7 +141,9 @@ const startChat = async () => {
               username: 'free',
               credential: 'free'
             }
-          ]
+          ],
+          sdpSemantics: 'unified-plan',
+          iceTransportPolicy: 'relay'
         }
       })
       peer.on('error', err => {
