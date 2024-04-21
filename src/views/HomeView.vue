@@ -161,8 +161,10 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
   await peerConnection.setLocalDescription(offer)
 
   // offer SDP 전달
-  peerConnection.addEventListener('icecandidate', event => {
+  peerConnection.addEventListener('icecandidate', async event => {
     if (!event.candidate) return
+    const offer = await peerConnection.createOffer()
+    await peerConnection.setLocalDescription(offer)
     socket.emit('enter', <RtcOffer>{
       type: 'rtcOffer',
       data: peerConnection.localDescription,
