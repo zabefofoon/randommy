@@ -106,7 +106,7 @@ const startChat = async () => {
         conn.on('data', data => {
           console.log('data: ', data)
         })
-      }, 100)
+      }, 1000)
     }
     // 2.2 Offer SDP를 받으면, 셋팅 후 Answer SDP 전달
     else if (token.receiver.id === socket.id) {
@@ -127,7 +127,7 @@ const startChat = async () => {
         conn.on('data', data => {
           console.log('data: ', data)
         })
-      }, 100)
+      }, 1000)
     }
   })
 
