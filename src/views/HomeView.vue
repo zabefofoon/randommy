@@ -107,12 +107,6 @@ const startChat = async () => {
       // 3. 전달 받은 Answer SDP 셋팅
       socket.on('receiveRtcAnswer', async (token: RtcOfferToken) => {
         console.log('signalingState: ', peerConnection.signalingState)
-        if (
-          !['stable', 'have-local-offer'].includes(
-            peerConnection.signalingState
-          )
-        )
-          return
         await peerConnection.setRemoteDescription(token.data)
       })
     }
@@ -164,6 +158,7 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
   await peerConnection.setLocalDescription(offer)
   // offer SDP 전달
   peerConnection.addEventListener('icecandidate', async event => {
+    console.log('icecandidate')
     if (!event.candidate) return
     console.log(event.candidate.address)
     const offer = await peerConnection.createOffer()
@@ -181,19 +176,24 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
 const sendAnswerSDP = async (socket: Socket) => {
   socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
     if (token.receiverId !== socket.id) return
+    // offer SDP 전달
+
     // 전달받은 offer SDP 셋팅
     console.log(peerConnection.signalingState)
-    if (peerConnection.signalingState !== 'stable') return
     await peerConnection.setRemoteDescription(token.data)
     // Answer SDP 셋팅 후 전달
     const answerSDP = await peerConnection.createAnswer()
     await peerConnection.setLocalDescription(answerSDP)
 
-    socket.emit('enter', <RtcAnswer>{
-      type: 'rtcAnswer',
-      data: answerSDP,
-      senderId: token.senderId,
-      receiverId: token.receiverId
+    peerConnection.addEventListener('icecandidate', async event => {
+      console.log('icecandidate')
+      if (!event.candidate) return
+      socket.emit('enter', <RtcAnswer>{
+        type: 'rtcAnswer',
+        data: answerSDP,
+        senderId: token.senderId,
+        receiverId: token.receiverId
+      })
     })
   })
 }
