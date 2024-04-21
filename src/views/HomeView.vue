@@ -94,9 +94,21 @@ const startChat = async () => {
         host: import.meta.env.VITE_REPEATER_HOST,
         port: import.meta.env.VITE_REPEATER_PORT,
         path: import.meta.env.VITE_REPEATER_PATH,
-        secure: import.meta.env.VITE_DEV_MODE === 'true' ? false : true
+        secure: import.meta.env.VITE_DEV_MODE !== 'true',
+        config: {
+          iceServers: [
+            { urls: 'stun:freestun.net:5350' },
+            {
+              urls: 'turns:freestun.tel:5350',
+              username: 'free',
+              credential: 'free'
+            }
+          ]
+        }
       })
-      peer.on('error', err => console.log(err))
+      peer.on('error', err => {
+        console.log(err)
+      })
       peer.on('connection', conn => {
         console.log('connection')
         conn.on('open', () => {
@@ -109,7 +121,7 @@ const startChat = async () => {
         conn.on('data', data => {
           console.log('data: ', data)
         })
-      }, 1000)
+      }, 100)
     }
     // 2.2 Offer SDP를 받으면, 셋팅 후 Answer SDP 전달
     else if (token.receiver.id === socket.id) {
@@ -118,9 +130,22 @@ const startChat = async () => {
         host: import.meta.env.VITE_REPEATER_HOST,
         port: import.meta.env.VITE_REPEATER_PORT,
         path: import.meta.env.VITE_REPEATER_PATH,
-        secure: import.meta.env.VITE_DEV_MODE === 'true' ? false : true
+        secure: import.meta.env.VITE_DEV_MODE !== 'true',
+        config: {
+          iceServers: [
+            { urls: 'stun:freestun.net:5350' },
+            {
+              urls: 'turns:freestun.tel:5350',
+              username: 'free',
+              credential: 'free'
+            }
+          ]
+        }
       })
-      peer.on('error', err => console.log(err))
+      peer.on('error', err => {
+        console.log(err)
+        console.log(err.message)
+      })
       peer.on('connection', conn => {
         console.log('connection')
         conn.on('open', () => {
@@ -133,7 +158,7 @@ const startChat = async () => {
         conn.on('data', data => {
           console.log('data: ', data)
         })
-      }, 1000)
+      }, 100)
     }
   })
 
