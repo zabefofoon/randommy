@@ -177,8 +177,8 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
       senderId: token.sender.id,
       receiverId: token.receiver.id
     })
-    // const offer = await peerConnection.createOffer()
-    // await peerConnection.setLocalDescription(offer)
+    const offer = await peerConnection.createOffer()
+    await peerConnection.setLocalDescription(offer)
 
     socket.emit('enter', <RtcOffer>{
       type: 'rtcOffer',
@@ -189,25 +189,32 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
   })
 }
 
+const iceCandidates: any[] = []
+
 const sendAnswerSDP = async (socket: Socket) => {
-  socket.on('receiveIcecandidate', (iceToken: Icecandidate) => {
-    if (iceToken.receiverId !== socket.id) return
+  socket.on('receiveIcecandidate', (token: Icecandidate) => {
+    if (token.receiverId !== socket.id) return
+    iceCandidates.push(token.data)
+  })
 
-    socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
-      // 전달받은 offer SDP 셋팅
-      await peerConnection.setRemoteDescription(token.data)
-      await peerConnection.addIceCandidate(iceToken.data)
+  socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
+    if (token.receiverId !== socket.id) return
+    await peerConnection.setRemoteDescription(token.data)
 
-      // Answer SDP 셋팅 후 전달
-      const answerSDP = await peerConnection.createAnswer()
-      await peerConnection.setLocalDescription(answerSDP)
+    for (const iceCandidate of iceCandidates) {
+      await peerConnection.addIceCandidate(iceCandidate)
+    }
+    // 전달받은 offer SDP 셋팅
+    console.log(peerConnection.signalingState)
+    // Answer SDP 셋팅 후 전달
+    const answerSDP = await peerConnection.createAnswer()
+    await peerConnection.setLocalDescription(answerSDP)
 
-      socket.emit('enter', <RtcAnswer>{
-        type: 'rtcAnswer',
-        data: answerSDP,
-        senderId: token.senderId,
-        receiverId: token.receiverId
-      })
+    socket.emit('enter', <RtcAnswer>{
+      type: 'rtcAnswer',
+      data: answerSDP,
+      senderId: token.senderId,
+      receiverId: token.receiverId
     })
   })
 }
@@ -218,6 +225,7 @@ const pauseChat = () => {
   setLoading(false)
   showPopup(true)
   clearTimeout(timer)
+  iceCandidates.length = 0
 }
 
 const sendMessage = async (message: string) => {
