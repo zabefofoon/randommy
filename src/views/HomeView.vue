@@ -163,6 +163,12 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
   // offer SDP 전달
   peerConnection.addEventListener('icecandidate', async event => {
     if (!event.candidate) return
+
+    if (
+      location.protocol.includes('https') &&
+      event.candidate.address?.includes('.local')
+    )
+      return
     const offer = await peerConnection.createOffer()
     await peerConnection.setLocalDescription(offer)
     socket.emit('enter', <RtcOffer>{
