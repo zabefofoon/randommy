@@ -106,6 +106,13 @@ const startChat = async () => {
 
       // 3. 전달 받은 Answer SDP 셋팅
       socket.on('receiveRtcAnswer', async (token: RtcOfferToken) => {
+        console.log('signalingState: ', peerConnection.signalingState)
+        if (
+          !['stable', 'have-local-offer'].includes(
+            peerConnection.signalingState
+          )
+        )
+          return
         await peerConnection.setRemoteDescription(token.data)
       })
     }
@@ -175,6 +182,8 @@ const sendAnswerSDP = async (socket: Socket) => {
   socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
     if (token.receiverId !== socket.id) return
     // 전달받은 offer SDP 셋팅
+    console.log(peerConnection.signalingState)
+    if (peerConnection.signalingState !== 'stable') return
     await peerConnection.setRemoteDescription(token.data)
     // Answer SDP 셋팅 후 전달
     const answerSDP = await peerConnection.createAnswer()
