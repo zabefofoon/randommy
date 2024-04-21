@@ -29,3 +29,10 @@ export interface RtcOfferToken {
   receiverId: string
   data: any
 }
+
+export interface Icecandidate {
+  type: 'icecandidate'
+  data: any
+  senderId: string
+  receiverId: string
+}

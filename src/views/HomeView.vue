@@ -40,7 +40,8 @@ import type {
   EnterInfo,
   RtcAnswer,
   RtcOffer,
-  RtcOfferToken
+  RtcOfferToken,
+  Icecandidate
 } from '@/models/EnterInfo'
 import util from '@/utils/util'
 import { Socket, io } from 'socket.io-client'
@@ -169,8 +170,16 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
       event.candidate.address?.includes('.local')
     )
       return
-    const offer = await peerConnection.createOffer()
-    await peerConnection.setLocalDescription(offer)
+
+    socket.emit('enter', <Icecandidate>{
+      type: 'icecandidate',
+      data: event.candidate,
+      senderId: token.sender.id,
+      receiverId: token.receiver.id
+    })
+    // const offer = await peerConnection.createOffer()
+    // await peerConnection.setLocalDescription(offer)
+
     socket.emit('enter', <RtcOffer>{
       type: 'rtcOffer',
       data: peerConnection.localDescription,
@@ -181,19 +190,24 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
 }
 
 const sendAnswerSDP = async (socket: Socket) => {
-  socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
-    if (token.receiverId !== socket.id) return
+  socket.on('receiveIcecandidate', (iceToken: Icecandidate) => {
+    if (iceToken.receiverId !== socket.id) return
 
-    // 전달받은 offer SDP 셋팅
-    await peerConnection.setRemoteDescription(token.data)
-    // Answer SDP 셋팅 후 전달
-    const answerSDP = await peerConnection.createAnswer()
-    await peerConnection.setLocalDescription(answerSDP)
-    socket.emit('enter', <RtcAnswer>{
-      type: 'rtcAnswer',
-      data: answerSDP,
-      senderId: token.senderId,
-      receiverId: token.receiverId
+    socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
+      // 전달받은 offer SDP 셋팅
+      await peerConnection.setRemoteDescription(token.data)
+      await peerConnection.addIceCandidate(iceToken.data)
+
+      // Answer SDP 셋팅 후 전달
+      const answerSDP = await peerConnection.createAnswer()
+      await peerConnection.setLocalDescription(answerSDP)
+
+      socket.emit('enter', <RtcAnswer>{
+        type: 'rtcAnswer',
+        data: answerSDP,
+        senderId: token.senderId,
+        receiverId: token.receiverId
+      })
     })
   })
 }
