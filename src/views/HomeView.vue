@@ -83,6 +83,7 @@ const startChat = async () => {
   })
   dataChannel = peerConnection.createDataChannel(`randommy`)
 
+  console.log(import.meta.env.VITE_REPEATER_URL)
   socket = io(import.meta.env.VITE_REPEATER_URL, {
     transports: ['websocket']
   })
@@ -101,22 +102,24 @@ const startChat = async () => {
   socket.on('matched', async (token: ConnectSocketToken) => {
     // 2.1 매칭된 다른 사용자에게 Offer SDP 셋팅 후, 전달
     if (token.sender.id === socket.id) {
+      console.log('matched')
       await senOfferSDP(socket, token)
       setOpponent(token.receiver)
-
-      // 3. 전달 받은 Answer SDP 셋팅
-      socket.on('receiveRtcAnswer', async (token: RtcOfferToken) => {
-        console.log('signalingState: ', peerConnection.signalingState)
-        await peerConnection.setRemoteDescription(token.data)
-      })
     }
     // 2.2 Offer SDP를 받으면, 셋팅 후 Answer SDP 전달
     else if (token.receiver.id === socket.id) {
+      console.log('matched')
       await sendAnswerSDP(socket)
       setOpponent(token.sender)
     }
   })
 
+  // 3. 전달 받은 Answer SDP 셋팅
+  socket.on('receiveRtcAnswer', async (token: RtcOfferToken) => {
+    if (token.senderId === socket.id) {
+      await peerConnection.setRemoteDescription(token.data)
+    }
+  })
   const randomTimeout = [10000, 11000, 12000]
   const randomNumber = Math.floor(Math.random() * 3)
 
@@ -156,14 +159,12 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
   // offer SDP 셋팅
   const offer = await peerConnection.createOffer()
   await peerConnection.setLocalDescription(offer)
+
   // offer SDP 전달
   peerConnection.addEventListener('icecandidate', async event => {
-    console.log('icecandidate')
     if (!event.candidate) return
-    console.log(event.candidate.address)
     const offer = await peerConnection.createOffer()
     await peerConnection.setLocalDescription(offer)
-    console.log(peerConnection.signalingState)
     socket.emit('enter', <RtcOffer>{
       type: 'rtcOffer',
       data: peerConnection.localDescription,
@@ -176,24 +177,17 @@ const senOfferSDP = async (socket: Socket, token: ConnectSocketToken) => {
 const sendAnswerSDP = async (socket: Socket) => {
   socket.on('receiveRtcOffer', async (token: RtcOfferToken) => {
     if (token.receiverId !== socket.id) return
-    // offer SDP 전달
 
     // 전달받은 offer SDP 셋팅
-    console.log(peerConnection.signalingState)
     await peerConnection.setRemoteDescription(token.data)
     // Answer SDP 셋팅 후 전달
     const answerSDP = await peerConnection.createAnswer()
     await peerConnection.setLocalDescription(answerSDP)
-
-    peerConnection.addEventListener('icecandidate', async event => {
-      console.log('icecandidate')
-      if (!event.candidate) return
-      socket.emit('enter', <RtcAnswer>{
-        type: 'rtcAnswer',
-        data: answerSDP,
-        senderId: token.senderId,
-        receiverId: token.receiverId
-      })
+    socket.emit('enter', <RtcAnswer>{
+      type: 'rtcAnswer',
+      data: answerSDP,
+      senderId: token.senderId,
+      receiverId: token.receiverId
     })
   })
 }
