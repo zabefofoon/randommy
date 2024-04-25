@@ -79,6 +79,11 @@ const startChat = async () => {
         urls: 'turns:freeturn.net:5349',
         username: 'free',
         credential: 'free'
+      },
+      {
+        urls: 'turns:freeturn.net:5350',
+        username: 'free',
+        credential: 'free'
       }
     ]
   })
