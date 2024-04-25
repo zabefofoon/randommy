@@ -76,7 +76,7 @@ const startChat = async () => {
       { urls: 'stun:freestun.net:5350' },
       { urls: 'stun:stun.l.google.com:19302' },
       {
-        urls: 'turns:freestun.tel:5350',
+        urls: 'turns:freeturn.net:5349',
         username: 'free',
         credential: 'free'
       }
