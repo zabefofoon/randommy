@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 defineProps<{
-  messages: { my: boolean; message: string }[]
+  messages: { my?: boolean; message: string }[]
 }>()
 </script>
 
