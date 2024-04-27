@@ -112,4 +112,11 @@ const sendMessage = async (message: string) => {
   await util.sleep(1)
   scrollAreaEl.value!.scrollTop = 999999999999999
 }
+
+window.addEventListener('beforeunload', () => {
+  socket.emit('randommy', {
+    type: 'close',
+    to: toValue(opponent)?.id
+  })
+})
 </script>
