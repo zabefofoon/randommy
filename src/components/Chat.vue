@@ -17,12 +17,18 @@
         {{ message.message }}
       </p>
     </li>
+    <li
+      v-if="messages.length && isChatting"
+      class="text-center text-sm text-red-500 font-light">
+      채팅이 종료되었습니다.
+    </li>
   </ul>
 </template>
 
 <script setup lang="ts">
 defineProps<{
   messages: { my?: boolean; message: string }[]
+  isChatting: boolean
 }>()
 </script>
 

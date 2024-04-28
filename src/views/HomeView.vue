@@ -1,22 +1,42 @@
 <template>
   <section class="h-full flex flex-col items-center justify-center lg:p-4">
-    <div class="flex flex-col | h-full w-full max-w-[800px] | border">
+    <div class="flex flex-col | h-full w-full max-w-[800px]">
       <div
         ref="scrollAreaEl"
         class="max-h-full | flex flex-col gap-8 | p-4 | overflow-auto">
         <Notice />
-        <Chat :messages="messages" />
+        <Chat
+          :messages="messages"
+          :is-chatting="isShowPopup" />
       </div>
-      <div class="flex items-center | border-t | mt-auto">
+      <div class="relative | flex items-center gap-0.5 | border-t | mt-auto">
         <button
           class="py-1.5 px-2 flex | border-r"
-          @click="pauseChat">
-          <i class="icon icon-close"></i>
+          @click="showOverflow(true)"
+          v-click-away="() => showOverflow(false)">
+          <i class="icon icon-overflow"></i>
+
+          <div
+            v-if="isShowOverflow"
+            class="flex flex-col items-start | absolute top-0 left-0 -translate-y-full | bg-white shadow-md | border rounded-md">
+            <button
+              class="py-1.5 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
+              @click="pauseChat()">
+              채팅 종료하기
+            </button>
+            <div class="border-t min-w-full"></div>
+            <button
+              class="py-1.5 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
+              @click="startChat()">
+              채팅 시작하기
+            </button>
+          </div>
         </button>
         <input
           ref="inputEl"
-          class="w-full | mt-auto | py-1.5 px-2"
+          class="w-full | mt-auto | py-2 px-2"
           placeholder="텍스트를 입력하세요."
+          :readonly="isShowPopup"
           @focus="scollToBottom"
           @keypress.enter="sendMessage($event.target!.value)" />
         <button
@@ -30,7 +50,7 @@
       v-if="isShowPopup"
       :loading="loading"
       @start="startChat"
-      @pause="pauseChat" />
+      @pause="pauseChat()" />
   </section>
 </template>
 
@@ -42,6 +62,7 @@ import type { ConnectSocketToken, EnterInfo } from '@/models/EnterInfo'
 import util from '@/utils/util'
 import { Socket, io } from 'socket.io-client'
 import { ref, toValue } from 'vue'
+import { directive as vClickAway } from 'vue3-click-away'
 
 const inputEl = ref<HTMLInputElement>()
 const scrollAreaEl = ref<HTMLDivElement>()
@@ -64,6 +85,7 @@ const setOpponent = (enterInfo: EnterInfo) => {
   messages.value = []
 }
 const startChat = async () => {
+  showOverflow(false)
   setLoading(true)
   socket = io(import.meta.env.VITE_REPEATER_URL, {
     transports: ['websocket']
@@ -95,18 +117,21 @@ const startChat = async () => {
       message
     })
   })
-  socket.on('close', pauseChat)
+  socket.on('close', () => pauseChat(false))
 }
 
-const pauseChat = () => {
-  socket.emit('randommy', {
-    type: 'close',
-    to: toValue(opponent)?.id
-  })
+const pauseChat = async (enableEmit = true) => {
+  if (enableEmit)
+    socket.emit('randommy', {
+      type: 'close',
+      to: toValue(opponent)?.id
+    })
+  await util.sleep(100)
   socket.disconnect()
   socket.close()
   setLoading(false)
   showPopup(true)
+  showOverflow(false)
 }
 
 const sendMessage = async (message: string) => {
@@ -116,11 +141,15 @@ const sendMessage = async (message: string) => {
     message
   })
   inputEl.value!.value = ''
+  inputEl.value?.focus()
   addMessage({
     my: true,
     message
   })
 }
+
+const isShowOverflow = ref(false)
+const showOverflow = (value: boolean) => (isShowOverflow.value = value)
 
 window.addEventListener('beforeunload', () => {
   socket.emit('randommy', {
