@@ -8,7 +8,7 @@ export const useUserStore = defineStore(
     const i18n = useI18n()
 
     const sex = ref<'m' | 'w'>('m')
-    const country = ref<string>('US')
+    const country = ref<string>()
     const setCountry = (countryCode: string) => (country.value = countryCode)
 
     watch(country, country => {
@@ -267,8 +267,6 @@ export const useUserStore = defineStore(
     return { sex, country, setCountry, allCountries, findCountryNameByCode }
   },
   {
-    persist: {
-      enabled: true
-    }
+    persist: true
   }
 )

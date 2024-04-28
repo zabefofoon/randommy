@@ -13,7 +13,7 @@
   "dependencies": {
     "peerjs": "^1.5.2",
     "pinia": "^2.1.7",
-    "pinia-plugin-persist": "^1.0.0",
+    "pinia-plugin-persistedstate": "^3.2.1",
     "short-unique-id": "^5.0.3",
     "socket.io-client": "^4.7.5",
     "vue": "^3.4.21",

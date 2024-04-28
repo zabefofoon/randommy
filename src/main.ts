@@ -1,5 +1,5 @@
 import { createPinia } from 'pinia'
-import piniaPersist from 'pinia-plugin-persist'
+import piniaPersist from 'pinia-plugin-persistedstate'
 import { createApp } from 'vue'
 import i18n from '@/i18n/i18n.config'
 
