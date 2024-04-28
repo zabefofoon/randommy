@@ -116,7 +116,8 @@ const sendMessage = async (message: string) => {
 window.addEventListener('beforeunload', () => {
   socket.emit('randommy', {
     type: 'close',
-    to: toValue(opponent)?.id
+    to: toValue(opponent)?.id,
+    from: socket.id
   })
 })
 </script>
