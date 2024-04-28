@@ -3,11 +3,11 @@
     <div class="flex flex-col | h-full w-full max-w-[800px] | border">
       <div
         ref="scrollAreaEl"
-        class="h-full | flex flex-col gap-8 | p-4 | overflow-auto">
+        class="max-h-full | flex flex-col gap-8 | p-4 | overflow-auto">
         <Notice />
         <Chat :messages="messages" />
       </div>
-      <div class="flex items-center | border-t">
+      <div class="flex items-center | border-t | mt-auto">
         <button
           class="py-1.5 px-2 flex | border-r"
           @click="pauseChat">
@@ -17,6 +17,7 @@
           ref="inputEl"
           class="w-full | mt-auto | py-1.5 px-2"
           placeholder="텍스트를 입력하세요."
+          @focus="scollToBottom"
           @keypress.enter="sendMessage($event.target!.value)" />
         <button
           class="py-1.5 px-2 flex | border-l"
@@ -53,9 +54,15 @@ const loading = ref(false)
 const setLoading = (value: boolean) => (loading.value = value)
 
 const messages = ref<{ my?: boolean; message: string }[]>([])
-
+const addMessage = async (message: { my?: boolean; message: string }) => {
+  messages.value.push(message)
+  scollToBottom()
+}
 const opponent = ref<EnterInfo>()
-const setOpponent = (enterInfo: EnterInfo) => (opponent.value = enterInfo)
+const setOpponent = (enterInfo: EnterInfo) => {
+  opponent.value = enterInfo
+  messages.value = []
+}
 const startChat = async () => {
   setLoading(true)
   socket = io(import.meta.env.VITE_REPEATER_URL, {
@@ -83,7 +90,11 @@ const startChat = async () => {
     }
   })
 
-  socket.on('message', (message: string) => messages.value.push({ message }))
+  socket.on('message', (message: string) => {
+    addMessage({
+      message
+    })
+  })
   socket.on('close', pauseChat)
 }
 
@@ -99,18 +110,16 @@ const pauseChat = () => {
 }
 
 const sendMessage = async (message: string) => {
-  messages.value.push({
-    my: true,
-    message
-  })
   socket.emit('randommy', {
     type: 'messageTo',
     to: toValue(opponent)?.id,
     message
   })
   inputEl.value!.value = ''
-  await util.sleep(1)
-  scrollAreaEl.value!.scrollTop = 999999999999999
+  addMessage({
+    my: true,
+    message
+  })
 }
 
 window.addEventListener('beforeunload', () => {
@@ -120,4 +129,9 @@ window.addEventListener('beforeunload', () => {
     from: socket.id
   })
 })
+
+const scollToBottom = async () => {
+  await util.sleep(100)
+  scrollAreaEl.value!.scrollTo({ top: 9999999999999 })
+}
 </script>
