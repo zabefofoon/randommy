@@ -4,11 +4,7 @@
       v-if="opponent"
       class="text-center text-sm | border-y border-dotted | py-3">
       {{ opponent.sex === 'w' ? $t('w') : $t('m')
-      }}{{
-        $t('matched', [
-          userStore.findCountryNameByCode(opponent.country || 'US')?.name
-        ])
-      }}
+      }}{{ $t('matched', [$t(opponent.country || 'US')]) }}
     </li>
     <li
       v-for="(message, index) in messages"
