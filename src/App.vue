@@ -7,7 +7,7 @@
     <Footer />
     <div
       v-if="isIOS"
-      class="border-b-[12px] lg:border-b-0"></div>
+      class="border-b-[8px] lg:border-b-0"></div>
   </div>
 </template>
 

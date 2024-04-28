@@ -1,13 +1,18 @@
 <template>
-  <section class="h-full flex flex-col items-center justify-center lg:p-4">
-    <div class="flex flex-col | h-full w-full max-w-[800px]">
+  <section class="h-full flex flex-col items-center justify-center">
+    <div class="flex flex-col | h-full w-full max-w-[800px] | border-x">
       <div
         ref="scrollAreaEl"
-        class="max-h-full | flex flex-col gap-8 | p-4 | overflow-auto">
-        <Notice />
+        class="max-h-full | flex flex-col gap-8 | px-3 pb-3 | overflow-auto">
+        <div
+          v-if="isShowPopup"
+          class="text-sm text-gray-500 pt-3">
+          {{ $t('notice') }}
+        </div>
         <Chat
           :messages="messages"
-          :is-chatting="isShowPopup" />
+          :is-chatting="isShowPopup"
+          :opponent="opponent" />
       </div>
       <div class="relative | flex items-center gap-0.5 | border-t | mt-auto">
         <button
@@ -15,27 +20,26 @@
           @click="showOverflow(true)"
           v-click-away="() => showOverflow(false)">
           <i class="icon icon-overflow"></i>
-
           <div
             v-if="isShowOverflow"
-            class="flex flex-col items-start | absolute top-0 left-0 -translate-y-full | bg-white shadow-md | border rounded-md">
+            class="flex flex-col items-start | absolute top-0 left-3 -translate-y-full | bg-white shadow-md | border rounded-md">
             <button
-              class="py-1.5 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
+              class="py-2 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
               @click="pauseChat()">
-              채팅 종료하기
+              {{ $t('pause') }}
             </button>
             <div class="border-t min-w-full"></div>
             <button
-              class="py-1.5 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
+              class="py-2 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
               @click="startChat()">
-              채팅 시작하기
+              {{ $t('start') }}
             </button>
           </div>
         </button>
         <input
           ref="inputEl"
           class="w-full | mt-auto | py-2 px-2"
-          placeholder="텍스트를 입력하세요."
+          :placeholder="$t('writeText')"
           :readonly="isShowPopup"
           @focus="scollToBottom"
           @keypress.enter="sendMessage($event.target!.value)" />
@@ -57,12 +61,14 @@
 <script setup lang="ts">
 import Chat from '@/components/Chat.vue'
 import ChatStarter from '@/components/ChatStarter.vue'
-import Notice from '@/components/Notice.vue'
 import type { ConnectSocketToken, EnterInfo } from '@/models/EnterInfo'
+import { useUserStore } from '@/stores/user.store'
 import util from '@/utils/util'
 import { Socket, io } from 'socket.io-client'
 import { ref, toValue } from 'vue'
 import { directive as vClickAway } from 'vue3-click-away'
+
+const userStore = useUserStore()
 
 const inputEl = ref<HTMLInputElement>()
 const scrollAreaEl = ref<HTMLDivElement>()
@@ -85,6 +91,8 @@ const setOpponent = (enterInfo: EnterInfo) => {
   messages.value = []
 }
 const startChat = async () => {
+  if (toValue(loading)) return
+
   showOverflow(false)
   setLoading(true)
   socket = io(import.meta.env.VITE_REPEATER_URL, {
@@ -96,8 +104,8 @@ const startChat = async () => {
     socket.emit('randommy', <EnterInfo>{
       type: 'enter',
       id: socket.id!,
-      sex: 'm',
-      country: 'korea'
+      sex: userStore.sex,
+      country: userStore.country
     })
   })
 
@@ -106,9 +114,11 @@ const startChat = async () => {
     if (token.sender.id !== socket.id) {
       setOpponent(token.sender)
       showPopup(false)
+      inputEl.value!.value = ''
     } else if (token.receiver.id !== socket.id) {
       setOpponent(token.receiver)
       showPopup(false)
+      inputEl.value!.value = ''
     }
   })
 
