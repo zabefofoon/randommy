@@ -1,12 +1,15 @@
 <template>
-  <section class="h-full flex flex-col items-center justify-center">
-    <div class="flex flex-col | h-full w-full max-w-[800px] | border-x">
+  <section
+    class="h-full flex flex-col items-center justify-center"
+    :class="darkModeStore.isDarkMode ? 'bg-gray-800' : ''">
+    <div class="flex flex-col | h-full w-full max-w-[800px] | sm:border-x">
       <div
         ref="scrollAreaEl"
         class="max-h-full | flex flex-col gap-8 | px-3 pb-3 | overflow-auto">
         <div
           v-if="isShowPopup"
-          class="text-sm text-gray-500 pt-3">
+          class="text-sm pt-3"
+          :class="darkModeStore.isDarkMode ? 'text-white' : 'text-gray-500'">
           {{ $t('notice') }}
         </div>
         <Chat
@@ -14,23 +17,43 @@
           :is-chatting="isShowPopup"
           :opponent="opponent" />
       </div>
-      <div class="relative | flex items-center gap-0.5 | border-t | mt-auto">
+      <div
+        class="relative | flex items-center gap-0.5 | border-t | mt-auto"
+        :class="darkModeStore.isDarkMode ? 'border-gray-500' : ''">
         <button
           class="py-1.5 px-2 flex | border-r"
+          :class="darkModeStore.isDarkMode ? 'text-white border-gray-500' : ''"
           @click="showOverflow(true)"
           v-click-away="() => showOverflow(false)">
           <i class="icon icon-overflow"></i>
           <div
             v-if="isShowOverflow"
-            class="flex flex-col items-start | absolute top-0 left-3 -translate-y-full | bg-white shadow-md | border rounded-md">
+            class="flex flex-col items-start | absolute top-0 left-3 -translate-y-full | shadow-md | border rounded-md"
+            :class="
+              darkModeStore.isDarkMode
+                ? 'bg-gray-800 border-gray-500'
+                : 'bg-white'
+            ">
             <button
-              class="py-2 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
+              class="py-2 px-4 | text-sm"
+              :class="
+                darkModeStore.isDarkMode
+                  ? 'bg-gray-800 hover:bg-gray-800'
+                  : 'text-gray-500 bg-white hover:bg-gray-100'
+              "
               @click="pauseChat()">
               {{ $t('pause') }}
             </button>
-            <div class="border-t min-w-full"></div>
+            <div
+              class="border-t min-w-full"
+              :class="darkModeStore.isDarkMode ? 'border-gray-500' : ''"></div>
             <button
-              class="py-2 px-4 | text-sm text-gray-500 | hover:bg-gray-100"
+              class="py-2 px-4 | text-sm"
+              :class="
+                darkModeStore.isDarkMode
+                  ? ' text-white hover:bg-gray-800'
+                  : 'text-gray-500 bg-white hover:bg-gray-100'
+              "
               @click="startChat()">
               {{ $t('start') }}
             </button>
@@ -38,13 +61,15 @@
         </button>
         <input
           ref="inputEl"
-          class="w-full | mt-auto | py-2 px-2"
+          class="w-full | mt-auto | py-2 px-2 | bg-transparent"
+          :class="darkModeStore.isDarkMode ? 'text-white' : 'text-gray-500'"
           :placeholder="$t('writeText')"
           :readonly="isShowPopup"
           @focus="scollToBottom"
           @keypress.enter="sendMessage($event.target!.value)" />
         <button
           class="py-1.5 px-2 flex | border-l"
+          :class="darkModeStore.isDarkMode ? 'text-white border-gray-500' : ''"
           @click="sendMessage(inputEl!.value)">
           <i class="icon icon-arrow-right"></i>
         </button>
@@ -62,6 +87,7 @@
 import Chat from '@/components/Chat.vue'
 import ChatStarter from '@/components/ChatStarter.vue'
 import type { ConnectSocketToken, EnterInfo } from '@/models/EnterInfo'
+import { useDarkModeStore } from '@/stores/darkMode.store'
 import { useUserStore } from '@/stores/user.store'
 import util from '@/utils/util'
 import { Socket, io } from 'socket.io-client'
@@ -69,6 +95,7 @@ import { ref, toValue } from 'vue'
 import { directive as vClickAway } from 'vue3-click-away'
 
 const userStore = useUserStore()
+const darkModeStore = useDarkModeStore()
 
 const inputEl = ref<HTMLInputElement>()
 const scrollAreaEl = ref<HTMLDivElement>()
