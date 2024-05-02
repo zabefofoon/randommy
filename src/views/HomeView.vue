@@ -94,8 +94,10 @@ import { useUserStore } from '@/stores/user.store'
 import util from '@/utils/util'
 import { Socket, io } from 'socket.io-client'
 import { ref, toValue } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { directive as vClickAway } from 'vue3-click-away'
 
+const i18n = useI18n()
 const userStore = useUserStore()
 const darkModeStore = useDarkModeStore()
 
@@ -122,6 +124,8 @@ const setOpponent = (enterInfo: EnterInfo) => {
 const startChat = async () => {
   if (toValue(loading)) return
 
+  Notification.requestPermission()
+
   showOverflow(false)
   setLoading(true)
   socket = io(import.meta.env.VITE_REPEATER_URL, {
@@ -143,11 +147,21 @@ const startChat = async () => {
     if (token.sender.id !== socket.id) {
       setOpponent(token.sender)
       showPopup(false)
-      inputEl.value!.value = ''
+      if (inputEl.value) inputEl.value.value = ''
     } else if (token.receiver.id !== socket.id) {
       setOpponent(token.receiver)
       showPopup(false)
-      inputEl.value!.value = ''
+      if (inputEl.value) inputEl.value.value = ''
+    }
+
+    if (document.hidden) {
+      const message = `${
+        opponent.value?.sex === 'w' ? i18n.t('w') : i18n.t('m')
+      }${i18n.t('matched', [i18n.t(opponent.value?.country || 'US')])}`
+
+      new Notification('RANDOMMY!', {
+        body: message
+      })
     }
   })
 
@@ -155,7 +169,13 @@ const startChat = async () => {
     addMessage({
       message
     })
+
+    if (document.hidden)
+      new Notification('RANDOMMY!', {
+        body: `${i18n.t('other')}: ${message}`
+      })
   })
+
   socket.on('close', () => pauseChat(false))
 }
 
@@ -179,8 +199,12 @@ const sendMessage = async (message: string) => {
     to: toValue(opponent)?.id,
     message
   })
-  inputEl.value!.value = ''
-  inputEl.value?.focus()
+
+  if (inputEl.value) {
+    inputEl.value.value = ''
+    inputEl.value.focus()
+  }
+
   addMessage({
     my: true,
     message
