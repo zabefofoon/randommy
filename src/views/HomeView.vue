@@ -2,7 +2,9 @@
   <section
     class="h-full flex flex-col items-center justify-center"
     :class="darkModeStore.isDarkMode ? 'bg-gray-800' : ''">
-    <div class="flex flex-col | h-full w-full max-w-[800px] | sm:border-x">
+    <div
+      class="flex flex-col | h-full w-full max-w-[800px] | sm:border-x"
+      :class="darkModeStore.isDarkMode ? 'border-gray-500' : ''">
       <div
         ref="scrollAreaEl"
         class="max-h-full | flex flex-col gap-8 | px-3 pb-3 | overflow-auto">

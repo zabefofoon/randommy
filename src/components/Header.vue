@@ -7,13 +7,13 @@
     <a href="#">
       <div class="flex gap-2">
         <img
-          class="w-[24px]"
+          class="w-[24px] rounded-full"
           src="@/assets/images/logo.svg" />
         <span
           class="font-extrabold"
-          :class="darkModeStore.isDarkMode ? 'text-white' : ''"
-          >RANDOMMY</span
-        >
+          :class="darkModeStore.isDarkMode ? 'text-white' : ''">
+          RANDOMMY
+        </span>
       </div>
     </a>
     <button

@@ -1,7 +1,9 @@
 <template>
   <footer
     class="border-t | hidden sm:flex gap-2 | px-4 py-0.5"
-    :class="darkModeStore.isDarkMode ? 'bg-gray-800' : 'bg-white'">
+    :class="
+      darkModeStore.isDarkMode ? 'bg-gray-800 border-gray-500' : 'bg-white'
+    ">
     <span
       class="text-sm | font-light"
       :class="darkModeStore.isDarkMode ? 'text-white' : 'text-gray-500'">
