@@ -19,10 +19,22 @@ import '@/assets/styles/basic.scss'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import { useDarkModeStore } from './stores/darkMode.store'
+import { watch } from 'vue'
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
 
 const darkModeStore = useDarkModeStore()
+
+watch(
+  () => darkModeStore.isDarkMode,
+  value =>
+    setTimeout(() => {
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute('content', value ? '#1f2937' : '#ffffff')
+    }),
+  { immediate: true }
+)
 </script>
 
 <style lang="scss" scoped></style>

@@ -12,9 +12,9 @@
     </span>
     <span
       class="text-sm | ml-auto"
-      :class="darkModeStore.isDarkMode ? 'text-white' : 'text-gray-500'"
-      >RANDOMMY</span
-    >
+      :class="darkModeStore.isDarkMode ? 'text-white' : 'text-gray-500'">
+      RANDOMMY
+    </span>
   </footer>
 </template>
 
