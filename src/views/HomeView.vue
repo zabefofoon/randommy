@@ -124,7 +124,13 @@ const setOpponent = (enterInfo: EnterInfo) => {
 const startChat = async () => {
   if (toValue(loading)) return
 
-  Notification.requestPermission()
+  if (window.Notification) {
+    try {
+      Notification.requestPermission()
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   showOverflow(false)
   setLoading(true)
@@ -154,7 +160,11 @@ const startChat = async () => {
       if (inputEl.value) inputEl.value.value = ''
     }
 
-    if (document.hidden) {
+    if (
+      document.hidden &&
+      window.Notification &&
+      Notification.permission === 'granted'
+    ) {
       const message = `${
         opponent.value?.sex === 'w' ? i18n.t('w') : i18n.t('m')
       }${i18n.t('matched', [i18n.t(opponent.value?.country || 'US')])}`
@@ -170,7 +180,11 @@ const startChat = async () => {
       message
     })
 
-    if (document.hidden)
+    if (
+      document.hidden &&
+      window.Notification &&
+      Notification.permission === 'granted'
+    )
       new Notification('RANDOMMY!', {
         body: `${i18n.t('other')}: ${message}`
       })
