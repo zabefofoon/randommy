@@ -4,7 +4,9 @@
     :class="
       darkModeStore.isDarkMode ? 'bg-gray-800 border-gray-500' : 'bg-white'
     ">
-    <a href="#">
+    <a
+      href="#"
+      @click.prevent="router.push({ query: { desc: 'true' } })">
       <div class="flex gap-2">
         <img
           class="w-[24px] rounded-full"
@@ -31,6 +33,9 @@
 
 <script setup lang="ts">
 import { useDarkModeStore } from '@/stores/darkMode.store'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const darkModeStore = useDarkModeStore()
 </script>
