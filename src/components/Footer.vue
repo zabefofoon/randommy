@@ -31,6 +31,13 @@
         @click="router.replace({ query: {} })">
         <i class="icon icon-close"></i>
       </button>
+      <a
+        class="absolute left-4 top-1.5 | flex items-center | underline"
+        href="https://www.threads.net/@sangwwooo/post/C6jVZ-Zh9RY"
+        target="_blank">
+        <i class="icon icon-threads"></i>
+        <span class="text-sm">sangwwooo</span>
+      </a>
       <div
         class="flex flex-col gap-4 | mx-auto | sm:w-1/2 max-h-[50vh] overflow-auto | text-sm">
         <h2>
