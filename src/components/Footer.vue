@@ -33,9 +33,9 @@
       </button>
       <div
         class="flex flex-col gap-4 | mx-auto | sm:w-1/2 max-h-[50vh] overflow-auto | text-sm">
-        <h1>
+        <h2>
           "Random Chatting with Randommy: Embrace Serendipitous Connections!"
-        </h1>
+        </h2>
         <h2>
           Random chatting has become one of the emerging social platforms in
           modern society. Random chatting refers to real-time chatting between

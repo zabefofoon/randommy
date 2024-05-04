@@ -10,12 +10,13 @@
       <div class="flex gap-2">
         <img
           class="w-[24px] rounded-full"
-          src="@/assets/images/logo.svg" />
-        <span
+          src="@/assets/images/logo.svg"
+          alt="RANDOMMY - Interactive Random Chat Experience" />
+        <h1
           class="font-extrabold"
           :class="darkModeStore.isDarkMode ? 'text-white' : ''">
           RANDOMMY
-        </span>
+        </h1>
       </div>
     </a>
     <button
