@@ -169,8 +169,10 @@ const startChat = async () => {
         opponent.value?.sex === 'w' ? i18n.t('w') : i18n.t('m')
       }${i18n.t('matched', [i18n.t(opponent.value?.country || 'US')])}`
 
-      new Notification('RANDOMMY!', {
-        body: message
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification('RANDOMMY', {
+          body: message
+        })
       })
     }
   })
@@ -185,8 +187,10 @@ const startChat = async () => {
       window.Notification &&
       Notification.permission === 'granted'
     )
-      new Notification('RANDOMMY!', {
-        body: `${i18n.t('other')}: ${message}`
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification('RANDOMMY', {
+          body: `${i18n.t('other')}: ${message}`
+        })
       })
   })
 
