@@ -12,6 +12,7 @@
     </span>
     <button
       class="text-sm underline"
+      :class="darkModeStore.isDarkMode ? 'text-white' : 'text-gray-500'"
       @click="router.push({ query: { desc: 'true' } })">
       more...
     </button>
