@@ -171,6 +171,10 @@ const startChat = async () => {
 
       navigator.serviceWorker.ready.then(registration => {
         registration.showNotification('RANDOMMY', {
+          requireInteraction: true,
+          renotify: true,
+          tag: 'RANDOMMY',
+          timestamp: Math.floor(Date.now()),
           body: message
         })
       })
@@ -189,7 +193,11 @@ const startChat = async () => {
     )
       navigator.serviceWorker.ready.then(registration => {
         registration.showNotification('RANDOMMY', {
-          body: `${i18n.t('other')}: ${message}`
+          body: `${i18n.t('other')}: ${message}`,
+          requireInteraction: true,
+          renotify: true,
+          tag: 'RANDOMMY',
+          timestamp: Math.floor(Date.now())
         })
       })
   })
